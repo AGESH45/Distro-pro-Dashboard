@@ -1,4 +1,5 @@
 import { toWordPressPath, wordpressConfig, wordpressHeaders } from './wordpress';
+import supabase from './supabase';
 
 export type Release = {
   id: number;
@@ -102,12 +103,18 @@ export type RoyaltyPayoutResult = {
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const endpoint = path;
-  if (!endpoint) throw new Error('WordPress API base is not configured.');
+  if (!endpoint) throw new Error('API base is not configured.');
+
+  // Get current session token
+  const { data: { session } } = await supabase.auth.getSession();
+  const token = session?.access_token;
+
   const res = await fetch(endpoint, {
     ...options,
-    credentials: 'include', // ensure cookies/auth are sent
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
       ...(options?.headers || {}),
     },
   });
