@@ -1,29 +1,29 @@
 import supabase from './_supabase.js';
+import { verifyUser, handleCors } from './_auth.js';
 
 export default async function handler(req, res) {
-  // CORS headers
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization'
-  );
+  if (handleCors(req, res)) return;
 
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
-  }
-
-  // Verify authorization (Check if requester is an admin)
-  // In a real app, you'd verify the JWT from the Authorization header
-  // For now, we'll proceed but ideally we'd use supabase.auth.getUser(req.headers.authorization)
-  
   try {
+    const user = await verifyUser(req);
+    
+    // STRICT ADMIN CHECK: Ensure the requester has the 'admin' role in metadata
+    if (user.user_metadata?.role !== 'admin') {
+      return res.status(403).json({ error: 'Access denied. Admins only.' });
+    }
+
     const { action } = req.query;
 
     if (req.method === 'GET') {
-      const { data, error } = await supabase.auth.admin.listUsers();
+      // SCALABILITY: Paginate user list to prevent timeouts with many users
+      const page = parseInt(req.query.page) || 1;
+      const perPage = 50;
+      
+      const { data, error } = await supabase.auth.admin.listUsers({
+        page,
+        perPage
+      });
+      
       if (error) throw error;
       
       const mapped = data.users.map(u => ({
@@ -42,25 +42,17 @@ export default async function handler(req, res) {
       const finalAction = action || bodyAction;
 
       if (finalAction === 'promote') {
-        // Find user by email
+        // Find user by email (Note: listUsers still used here for finding, could be improved with a search)
         const { data: listData } = await supabase.auth.admin.listUsers();
         const existing = listData.users.find(u => u.email === email);
         
         if (existing) {
           await supabase.auth.admin.updateUserById(existing.id, {
-            user_metadata: { role: 'admin' }
+            user_metadata: { ...existing.user_metadata, role: 'admin' }
           });
           return res.status(200).json({ message: 'User promoted' });
         } else {
-          // Create new user
-          const { data: newUser, error } = await supabase.auth.admin.createUser({
-            email,
-            password: Math.random().toString(36).slice(-10),
-            email_confirm: true,
-            user_metadata: { role: 'admin' }
-          });
-          if (error) throw error;
-          return res.status(200).json({ message: 'User created and promoted' });
+          return res.status(404).json({ error: 'User not found' });
         }
       }
 
@@ -75,6 +67,8 @@ export default async function handler(req, res) {
 
     if (req.method === 'DELETE') {
       const { userId } = req.query;
+      if (!userId) return res.status(400).json({ error: 'User ID is required' });
+      
       const { error } = await supabase.auth.admin.deleteUser(userId);
       if (error) throw error;
       return res.status(200).json({ message: 'User deleted' });
@@ -82,7 +76,7 @@ export default async function handler(req, res) {
 
     res.status(405).json({ error: 'Method not allowed' });
   } catch (error) {
-    console.error('Admin API error:', error);
-    res.status(500).json({ error: error.message });
+    console.error('Admin API error:', error.message);
+    res.status(error.message.includes('Auth') ? 401 : 500).json({ error: error.message });
   }
 }
