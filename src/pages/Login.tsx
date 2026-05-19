@@ -24,6 +24,7 @@ function friendlyAuthError(text: string) {
   if (lower.includes('already registered') || lower.includes('already exists')) return 'This email is already registered. Try signing in instead.';
   if (lower.includes('signup is disabled')) return 'Registration is disabled in Supabase. Enable Email signups in Authentication → Providers → Email.';
   if (lower.includes('email rate limit')) return 'Too many registration emails were requested. Please wait and try again.';
+  if (lower.includes('error sending confirmation email')) return 'Supabase email limit reached. Please go to your Supabase Dashboard → Authentication → Providers → Email and disable "Confirm email" to allow signups without email verification.';
   return text;
 }
 
@@ -102,7 +103,7 @@ export function Login({ onLogin }: { onLogin: () => void }) {
           email: email.trim(),
           password,
           options: {
-            data: { full_name: fullName.trim(), remember_me: remember },
+            data: { full_name: fullName.trim(), artist_name: fullName.trim(), remember_me: remember },
             emailRedirectTo: window.location.origin,
           },
         });
@@ -122,7 +123,7 @@ export function Login({ onLogin }: { onLogin: () => void }) {
     setError('');
     setMessage('');
     setGoogleLoading(true);
-    signInWithGoogle('ArtistDirect Dashboard');
+    signInWithGoogle();
     window.setTimeout(() => setGoogleLoading(false), 12000);
   };
 
@@ -152,7 +153,7 @@ export function Login({ onLogin }: { onLogin: () => void }) {
       ) : (
       <section className="relative mx-auto grid min-h-screen max-w-7xl items-center gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[1fr_.88fr] lg:px-8">
         <div className="hidden lg:block">
-          <div className="mb-6 inline-grid h-16 w-16 place-items-center rounded-3xl bg-gradient-to-br from-red-600 to-blue-600"><Music2 className="h-8 w-8" /></div>
+          <img src="/logo.png" alt="TRM Distro" className="mb-6 h-16 w-auto object-contain" />
           <h1 className="max-w-3xl text-5xl font-black tracking-tight md:text-7xl">Production artist portal.</h1>
           <p className="mt-6 max-w-xl text-lg leading-8 text-white/68">Standalone Supabase authentication, protected API routes, release distribution, Paystack royalty payouts and statement downloads.</p>
           <div className="mt-8 grid max-w-2xl gap-4 sm:grid-cols-3">
@@ -163,8 +164,8 @@ export function Login({ onLogin }: { onLogin: () => void }) {
         <form onSubmit={submit} className="mx-auto w-full max-w-xl rounded-[2rem] border border-white/10 bg-white/[0.08] p-5 shadow-2xl shadow-black/30 backdrop-blur md:p-8">
           <div className="mb-6 flex items-start justify-between gap-4">
             <div>
-              <div className="mb-4 inline-grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-red-600 to-blue-600 lg:hidden"><Music2 className="h-6 w-6" /></div>
-              <p className="text-xs font-bold uppercase tracking-[0.24em] text-red-200">ArtistDirect</p>
+              <img src="/logo.png" alt="TRM Distro" className="mb-4 h-12 w-auto object-contain lg:hidden" />
+              <p className="text-xs font-bold uppercase tracking-[0.24em] text-sky-400">TRM Distro</p>
               <h2 className="mt-2 text-3xl font-black">{mode === 'login' ? 'Welcome back' : 'Create artist account'}</h2>
               <p className="mt-2 text-sm text-white/55">{mode === 'login' ? 'Sign in to your production artist dashboard.' : 'Create a secure artist account with email/password.'}</p>
             </div>

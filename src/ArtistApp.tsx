@@ -45,7 +45,7 @@ export function ArtistApp({ user, onLogout }: { user: User; onLogout: () => void
       const pitchData = await api.pitches().catch((e) => { console.error('pitches fetch error', e); return []; });
       const profileData = user ? {
         id: 1,
-        artist_name: user.user_metadata?.artist_name || 'Unknown Artist',
+        artist_name: user.user_metadata?.artist_name || user.user_metadata?.full_name || user.user_metadata?.name || 'Unknown Artist',
         email: user.email || '',
         avatar_url: user.user_metadata?.avatar_url || '',
         bio: user.user_metadata?.bio || '',
@@ -68,7 +68,7 @@ export function ArtistApp({ user, onLogout }: { user: User; onLogout: () => void
       setPitches(Array.isArray(pitchData) ? pitchData : []);
       setProfile(profileData && typeof profileData === 'object' && !Array.isArray(profileData) ? profileData : {
         id: 1,
-        artist_name: 'Unknown Artist',
+        artist_name: user?.user_metadata?.artist_name || user?.user_metadata?.full_name || user?.user_metadata?.name || 'Unknown Artist',
         email: user?.email || '',
         avatar_url: '',
         bio: '',

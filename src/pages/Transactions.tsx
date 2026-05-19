@@ -17,20 +17,20 @@ function downloadCsv(transactions: Transaction[]) {
     Number(t.amount).toFixed(2),
   ]);
   const summary = [
-    ['ArtistDirect Royalty Statement'],
+    ['TRM Distro Royalty Statement'],
     [`Generated: ${new Date().toLocaleString()}`],
     [`Paid total: ${paid.toFixed(2)}`],
     [`Processing total: ${processing.toFixed(2)}`],
     [],
   ];
-  const csv = [...summary, headers, ...rows]
+  const csv = [...summary, [headers], ...rows]
     .map((row) => row.map((value) => `"${String(value ?? '').replaceAll('"', '""')}"`).join(','))
     .join('\n');
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `artistdirect-royalty-statement-${new Date().toISOString().slice(0, 10)}.csv`;
+  link.download = `trm-distro-royalty-statement-${new Date().toISOString().slice(0, 10)}.csv`;
   document.body.appendChild(link);
   link.click();
   link.remove();
@@ -40,12 +40,12 @@ function downloadCsv(transactions: Transaction[]) {
 function downloadHtmlStatement(transactions: Transaction[]) {
   const paid = transactions.filter((t) => t.status === 'Paid').reduce((sum, t) => sum + Number(t.amount), 0);
   const rows = transactions.map((t) => `<tr><td>${new Date(t.transaction_date).toLocaleDateString()}</td><td>${t.description}</td><td>${t.method}</td><td>${t.reference}</td><td>${t.status}</td><td style="text-align:right">$${Number(t.amount).toFixed(2)}</td></tr>`).join('');
-  const html = `<!doctype html><html><head><meta charset="utf-8"><title>Royalty Statement</title><style>body{font-family:Arial,sans-serif;padding:32px;color:#111}h1{color:#1d4ed8}table{width:100%;border-collapse:collapse;margin-top:24px}th,td{border:1px solid #ddd;padding:10px;text-align:left}th{background:#0f172a;color:white}.summary{padding:16px;background:#eef2ff;border-radius:12px}</style></head><body><h1>ArtistDirect Royalty Statement</h1><div class="summary"><strong>Generated:</strong> ${new Date().toLocaleString()}<br><strong>Confirmed paid royalties:</strong> $${paid.toFixed(2)}</div><table><thead><tr><th>Date</th><th>Description</th><th>Method</th><th>Reference</th><th>Status</th><th>Amount</th></tr></thead><tbody>${rows}</tbody></table></body></html>`;
+  const html = `<!doctype html><html><head><meta charset="utf-8"><title>Royalty Statement</title><style>body{font-family:Arial,sans-serif;padding:32px;color:#111}h1{color:#1d4ed8}table{width:100%;border-collapse:collapse;margin-top:24px}th,td{border:1px solid #ddd;padding:10px;text-align:left}th{background:#0f172a;color:white}.summary{padding:16px;background:#eef2ff;border-radius:12px}</style></head><body><h1>TRM Distro Royalty Statement</h1><div class="summary"><strong>Generated:</strong> ${new Date().toLocaleString()}<br><strong>Confirmed paid royalties:</strong> $${paid.toFixed(2)}</div><table><thead><tr><th>Date</th><th>Description</th><th>Method</th><th>Reference</th><th>Status</th><th>Amount</th></tr></thead><tbody>${rows}</tbody></table></body></html>`;
   const blob = new Blob([html], { type: 'text/html;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `artistdirect-royalty-statement-${new Date().toISOString().slice(0, 10)}.html`;
+  link.download = `trm-distro-royalty-statement-${new Date().toISOString().slice(0, 10)}.html`;
   document.body.appendChild(link);
   link.click();
   link.remove();

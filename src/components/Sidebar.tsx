@@ -21,9 +21,9 @@ export function Sidebar({ page, setPage, onLogout, mobileMenuOpen, setMobileMenu
       )}
       <aside className={`fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-white/10 bg-slate-950/95 p-5 backdrop-blur-xl transition-transform duration-300 lg:translate-x-0 ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
       <button onClick={() => setPage('home')} className="mb-8 flex shrink-0 items-center gap-3 text-left">
-        <div className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-red-600 to-blue-600 font-black text-white">AD</div>
+        <img src="/logo.png" alt="TRM Distro" className="h-10 w-auto object-contain" />
         <div>
-          <div className="text-lg font-black text-white">ArtistDirect</div>
+          <div className="text-lg font-black text-white">TRM Distro</div>
           <div className="text-xs text-white/50">production dashboard</div>
         </div>
       </button>
